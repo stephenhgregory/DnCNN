@@ -82,12 +82,14 @@ def gen_patches(file_name):
                 
     return patches
 
-def datagenerator(data_dir='data/Train400',verbose=False):
-    
-    file_list = glob.glob(data_dir+'/*.png')  # get name list of all .png files
-    # initrialize
+
+def datagenerator(data_dir='data/CoregisteredImages', verbose=False):
+
+    file_list = glob.glob(data_dir+'/*.jpg')  # get name list of all .png files
+    # initialize
     data = []
     # generate patches
+    print(f'The length of the file list is: {len(file_list)}')
     for i in range(len(file_list)):
         patch = gen_patches(file_list[i])
         data.append(patch)

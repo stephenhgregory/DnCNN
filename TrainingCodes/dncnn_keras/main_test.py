@@ -26,22 +26,34 @@ from keras.models import load_model, model_from_json
 from skimage.measure import compare_psnr, compare_ssim
 from skimage.io import imread, imsave
 
+import tensorflow as tf
+
+physical_devices = tf.config.list_physical_devices('GPU')
+try:
+    tf.config.experimental.set_memory_growth(physical_devices[0], True)
+except:
+    # Invalid device or cannot modify virtual devices once initialized.
+    print(f'The following line threw an exception: tf.config.experimental.set_memory_growth(physical_devices[0], True)')
+    pass
+
 
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--set_dir', default='data/Test', type=str, help='directory of test dataset')
-    parser.add_argument('--set_names', default=['Set68','Set12'], type=list, help='name of test dataset')
+    parser.add_argument('--set_names', default=['CoregisteredImages150Thru160'], type=list, help='name of test dataset')
     parser.add_argument('--sigma', default=25, type=int, help='noise level')
     parser.add_argument('--model_dir', default=os.path.join('models','DnCNN_sigma25'), type=str, help='directory of the model')
-    parser.add_argument('--model_name', default='model_001.hdf5', type=str, help='the model name')
+    parser.add_argument('--model_name', default='model_004.hdf5', type=str, help='the model name')
     parser.add_argument('--result_dir', default='results', type=str, help='directory of results')
-    parser.add_argument('--save_result', default=0, type=int, help='save the denoised image, 1 or 0')
+    parser.add_argument('--save_result', default=1, type=int, help='save the denoised image, 1 or 0')
     return parser.parse_args()
     
 def to_tensor(img):
     if img.ndim == 2:
+        print('The image dimensions are 2!')
         return img[np.newaxis,...,np.newaxis]
     elif img.ndim == 3:
+        print('The image dimensions are 3!')
         return np.moveaxis(img,2,0)[...,np.newaxis]
 
 def from_tensor(img):
@@ -122,7 +134,8 @@ if __name__ == '__main__':
                 print('%10s : %10s : %2.4f second'%(set_cur,im,elapsed_time))
                 x_=from_tensor(x_)
                 psnr_x_ = compare_psnr(x, x_)
-                ssim_x_ = compare_ssim(x, x_)
+                ssim_x_ = compare_ssim(x, x_, multichannel=True)
+                # ssim_x_ = compare_ssim(x, x_)
                 if args.save_result:
                     name, ext = os.path.splitext(im)
                     show(np.hstack((y,x_))) # show the image

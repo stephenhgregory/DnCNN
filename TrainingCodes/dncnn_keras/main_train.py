@@ -34,11 +34,21 @@ from keras.optimizers import Adam
 import data_generator as dg
 import keras.backend as K
 
+import tensorflow as tf
+
+physical_devices = tf.config.list_physical_devices('GPU')
+try:
+    tf.config.experimental.set_memory_growth(physical_devices[0], True)
+except:
+    # Invalid device or cannot modify virtual devices once initialized.
+    print(f'The following line threw an exception: tf.config.experimental.set_memory_growth(physical_devices[0], True)')
+    pass
+
 ## Params
 parser = argparse.ArgumentParser()
 parser.add_argument('--model', default='DnCNN', type=str, help='choose a type of model')
 parser.add_argument('--batch_size', default=128, type=int, help='batch size')
-parser.add_argument('--train_data', default='data/Train400', type=str, help='path of train data')
+parser.add_argument('--train_data', default='data/CoregisteredImages', type=str, help='path of train data')
 parser.add_argument('--sigma', default=25, type=int, help='noise level')
 parser.add_argument('--epoch', default=300, type=int, help='number of train epoches')
 parser.add_argument('--lr', default=1e-3, type=float, help='initial learning rate for Adam')
@@ -65,8 +75,8 @@ def DnCNN(depth,filters=64,image_channels=1, use_bnorm=True):
         x = Conv2D(filters=filters, kernel_size=(3,3), strides=(1,1),kernel_initializer='Orthogonal', padding='same',use_bias = False,name = 'conv'+str(layer_count))(x)
         if use_bnorm:
             layer_count += 1
-            #x = BatchNormalization(axis=3, momentum=0.1,epsilon=0.0001, name = 'bn'+str(layer_count))(x) 
-	    x = BatchNormalization(axis=3, momentum=0.0,epsilon=0.0001, name = 'bn'+str(layer_count))(x)
+        # x = BatchNormalization(axis=3, momentum=0.1,epsilon=0.0001, name = 'bn'+str(layer_count))(x)
+        x = BatchNormalization(axis=3, momentum=0.0,epsilon=0.0001, name = 'bn'+str(layer_count))(x)
         layer_count += 1
         x = Activation('relu',name = 'relu'+str(layer_count))(x)  
     # last layer, Conv
@@ -113,7 +123,8 @@ def train_datagen(epoch_iter=2000,epoch_num=5,batch_size=128,data_dir=args.train
     while(True):
         n_count = 0
         if n_count == 0:
-            #print(n_count)
+            # print(n_count)
+            print(f'Accessing training data in: {data_dir}')
             xs = dg.datagenerator(data_dir)
             assert len(xs)%args.batch_size ==0, \
             log('make sure the last iteration has a full batchsize, this is important if you use batch normalization!')
