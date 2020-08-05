@@ -1,8 +1,13 @@
 <component name="ProjectDictionaryState">
   <dictionary name="ubuntu">
     <words>
+      <w>batchnorm</w>
+      <w>conv</w>
+      <w>convolutional</w>
       <w>coregistered</w>
       <w>imgs</w>
+      <w>keras</w>
+      <w>relu</w>
     </words>
   </dictionary>
 </component>
